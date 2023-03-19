@@ -2,20 +2,24 @@ import books from "../models/Book.js";
 
 class BookController {
   static listBooks = (req, res) => {
-    books.find((err, books) => {
-      res.status(200).json(books);
+    books.find()
+      .populate('author')
+      .exec((err, books) => {
+        res.status(200).json(books);
     })
   }
 
   static listBookById = (req, res) => {
     const id = req.params.id;
 
-    books.findById(id, (err, books) => {
-      if(err) {
-        res.status(400).send(`${err.message} - Id do livro não localizado`)
-      }
+    books.findById(id)
+      .populate('author', 'name')
+      .exec((err, books) => {
+        if(err) {
+          res.status(400).send(`${err.message} - Id do livro não localizado`)
+        }
 
-      res.status(200).send(books)
+        res.status(200).send(books)
     })
   }
 
@@ -52,6 +56,18 @@ class BookController {
       }
 
       res.status(200).send({message: 'Livro removido com sucesso'})
+    })
+  }
+
+  static listBookByPublishingCompany = (req, res) => {
+    const publishingCompany = req.query.publishingCompany;
+
+    books.find({'publishingCompany': publishingCompany},{},(err, books) => {
+        if(err) {
+          res.status(400).send(`${err.message} - Livro não localizado`)
+        }
+
+        res.status(200).send(books)
     })
   }
 }
